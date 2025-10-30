@@ -1,0 +1,28 @@
+<div class="quick-actions-container">
+    <div class="section-header">
+        <h3>
+            <mat-icon>
+                flash_on
+            </mat-icon>
+            Quick Actions
+        </h3>
+    </div>
+    <div class="actions-grid">
+        <button 
+        *ngFor="let action of quickActions"
+        mat-raised-button
+        class="action-button"
+        [style.--action-color]="action.color"
+        (click)="navigateTo(action.route)"
+        >
+        <div class="action-icon">
+            <mat-icon>{{ action.icon }}</mat-icon>
+        </div>
+        <div class="action-content">
+            <div class="action-title">{{ action.title }}</div>
+            <div class="action-description">{{ action.description }}</div>
+            
+        </div>
+        </button>
+    </div>
+</div>

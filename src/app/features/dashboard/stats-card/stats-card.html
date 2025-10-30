@@ -1,0 +1,23 @@
+<div class="stats-cards-container">
+  <div class="stats-grid">
+    <div *ngFor="let card of statCards" class="stat-card" [style.--card-color]="card.color">
+      
+      <div class="stat-icon">
+        <mat-icon>{{ card.icon }}</mat-icon>
+      </div>
+
+      <div class="stat-content">
+        <div class="stat-value">{{ card.value | number }}</div>
+        <div class="stat-title">{{ card.title }}</div>
+        
+        <div class="stat-change" [class]="card.changeType">
+          <mat-icon>
+            {{ card.changeType === 'increase' ? 'arrow_upward' : 'arrow_downward' }}
+          </mat-icon>
+          <span>{{ card.change }}% from last month</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
