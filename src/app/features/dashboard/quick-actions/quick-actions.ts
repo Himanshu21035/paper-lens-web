@@ -49,7 +49,7 @@ export class QuickActions {
       title: 'Library',
       description: 'Browse your papers',
       icon: 'library_books',
-      route: '/library',
+      route: '/papers',
       color: '#e67e22'
     },
     {

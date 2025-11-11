@@ -1,0 +1,54 @@
+<div class="papers-list-container">
+  <h2>📚 Uploaded Papers</h2>
+
+  <div *ngIf="isLoading" class="loading-block">
+    <div class="spinner"></div> Loading papers...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+    <button class="btn-retry" (click)="fetchPapers()">Retry</button>
+  </div>
+
+  <div class="empty-block" *ngIf="!isLoading && !error && papers.length === 0">
+    <p>No papers uploaded yet. Use the upload page to add research papers.</p>
+  </div>
+
+  <div class="cards-grid" *ngIf="papers.length > 0">
+    <div 
+      class="paper-card"
+      *ngFor="let paper of papers"
+      (click)="openPaper(paper.paperId)">
+      
+      <div class="paper-card-header">
+        <div class="paper-icon">📄</div>
+        <div>
+          <h3>{{ paper.metadata?.title || paper.paperId }}</h3>
+          <p class="paper-authors" *ngIf="paper.metadata?.authors?.length">
+            {{ paper.metadata.authors.join(', ') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="paper-meta">
+        <div>
+          <span class="meta-label">Status:</span>
+          <span class="badge" [ngClass]="paper.status">{{ paper.status | titlecase }}</span>
+        </div>
+        <div>
+          <span class="meta-label">Chunks:</span>
+          <span>{{ paper.chunksCount || paper.totalChunks || '--' }}</span>
+        </div>
+        <div>
+          <span class="meta-label">Processed:</span>
+          <span>{{ paper.processedDate ? (paper.processedDate | date:'medium') : '--' }}</span>
+        </div>
+      </div>
+
+      <div class="paper-abstract" *ngIf="paper.metadata?.abstract">
+        <span class="label">Abstract:&nbsp;</span>
+        <span>{{ paper.metadata.abstract | slice:0:160 }}<span *ngIf="paper.metadata.abstract.length > 160">...</span></span>
+      </div>
+    </div>
+  </div>
+</div>

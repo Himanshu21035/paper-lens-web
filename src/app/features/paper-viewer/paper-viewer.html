@@ -1,0 +1,170 @@
+<div class="viewer-container">
+  <!-- Header -->
+  <div class="viewer-header">
+    <button class="btn-back" (click)="goBack()">
+      ← Back to Papers
+    </button>
+    
+    <div class="header-actions">
+      <button class="btn-danger" (click)="deletePaper()">
+        🗑️ Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingPaper" class="loading-block">
+    <div class="spinner"></div> Loading paper...
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !paper" class="error-message">
+    {{ error }}
+    <button class="btn-retry" (click)="loadPaper()">Retry</button>
+  </div>
+
+  <!-- Paper Content -->
+  <div *ngIf="paper && !isLoadingPaper" class="paper-content">
+    
+    <!-- Paper Info Card -->
+    <div class="paper-info-card">
+      <h1>{{ summary?.metadata?.title || paperId }}</h1>
+      
+      <div class="paper-meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">Authors:</span>
+          <span>{{ summary?.metadata?.authors?.join(', ') || 'N/A' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Status:</span>
+          <span class="badge" [ngClass]="paper.status">{{ paper.status | titlecase }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Chunks:</span>
+          <span>{{ paper.chunksCount || paper.totalChunks || 'N/A' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Processed:</span>
+          <span>{{ paper.processedDate | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <div class="abstract-section" *ngIf="summary?.metadata?.abstract">
+        <h3>Abstract</h3>
+        <p>{{ summary?.metadata?.abstract||'' }}</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'summary'"
+        (click)="switchTab('summary')">
+        📄 Summary
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab === 'qa'"
+        (click)="switchTab('qa')">
+        💬 Ask Questions
+      </button>
+    </div>
+
+    <!-- Summary Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'summary'">
+      <div *ngIf="isLoadingSummary" class="loading-block">
+        <div class="spinner"></div> Loading summary...
+      </div>
+
+      <div *ngIf="!isLoadingSummary && summary?.chunk_summaries" class="chunks-list">
+        <div class="chunk-card" *ngFor="let chunk of summary?.chunk_summaries">
+          <div class="chunk-header">
+            <span class="chunk-label">Chunk {{ chunk.chunk_index }}</span>
+          </div>
+          <div class="chunk-summary">
+            <strong>Summary:</strong> {{ chunk.summary }}
+          </div>
+          <div class="chunk-text">
+            <strong>Original Text:</strong> {{ chunk.original_text | slice:0:300 }}
+            <span *ngIf="chunk.original_text.length > 300">...</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoadingSummary && !summary" class="empty-state">
+        Summary not available for this paper.
+      </div>
+    </div>
+
+    <!-- Q&A Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'qa'">
+      <div class="qa-container">
+        
+        <!-- Chat History -->
+        <div class="chat-history">
+          <div *ngIf="chatHistory.length === 0" class="empty-chat">
+            <p>👋 Ask questions about this research paper!</p>
+            <p class="suggestions-label">Try asking:</p>
+            <ul class="suggestions">
+              <li>"What is the main methodology?"</li>
+              <li>"What are the key findings?"</li>
+              <li>"What are the limitations?"</li>
+            </ul>
+          </div>
+
+          <div *ngFor="let message of chatHistory" 
+               class="chat-message"
+               [ngClass]="message.role">
+            
+            <div class="message-header">
+              <span class="message-icon">{{ message.role === 'user' ? '👤' : '🤖' }}</span>
+              <span class="message-time">{{ message.timestamp | date:'short' }}</span>
+            </div>
+            
+            <div class="message-content">
+              {{ message.content }}
+            </div>
+
+            <!-- Sources -->
+            <div *ngIf="message.sources && message.sources.length > 0" class="sources">
+              <strong>Sources:</strong>
+              <div class="source-chips">
+                <span *ngFor="let source of message.sources" class="source-chip">
+                  Chunk {{ source.chunkIndex }} ({{ source.relevanceScore }})
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading indicator -->
+          <div *ngIf="isAsking" class="chat-message assistant">
+            <div class="message-header">
+              <span class="message-icon">🤖</span>
+            </div>
+            <div class="message-content typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="qa-input-area">
+          <textarea 
+            [(ngModel)]="question"
+            placeholder="Ask a question about this paper..."
+            (keydown.enter)="$event.preventDefault(); askQuestion()"
+            rows="3"
+            [disabled]="isAsking"></textarea>
+          <button 
+            class="btn-ask"
+            (click)="askQuestion()"
+            [disabled]="!question.trim() || isAsking">
+            {{ isAsking ? 'Thinking...' : 'Ask' }} 🚀
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

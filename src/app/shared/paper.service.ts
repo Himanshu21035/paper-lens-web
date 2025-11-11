@@ -13,6 +13,40 @@ export interface Paper{
     chuncksCount?:number;
     processedDate?:string;
     summaryAvailable?:boolean;
+    metadata?:any;
+    totalChunks?:number;
+    chunksCount?:number;
+}
+export interface Summary {
+  paperId: string;
+  metadata: {
+    title?: string;
+    authors?: string[];
+    abstract?: string;
+    processed_date?: string;
+    total_chunks?: number;
+  };
+  chunk_summaries?: Array<{
+    chunk_id: string;
+    chunk_index: number;
+    original_text: string;
+    summary: string;
+  }>;
+}
+
+export interface QAResponse {
+  answer: string;
+  sources: Array<{
+    chunkId: string;
+    chunkIndex: number;
+    relevanceScore: string;
+    summary?: string;
+  }>;
+  metadata: {
+    paperId: string;
+    chunksRetrieved: number;
+    question: string;
+  };
 }
 @Injectable({
   providedIn: 'root'
@@ -39,5 +73,19 @@ export class PaperService {
   }
   listPapers():Observable<{papers:Paper[];count:number}>{
     return this.http.get<{papers:Paper[];count:number}>(this.apiUrl);
+  }
+  getPaperSummary(paperId: string): Observable<Summary> {
+    return this.http.get<Summary>(`${this.apiUrl}/${paperId}/summary`);
+  }
+
+  askQuestion(paperId: string, question: string, topK: number = 5): Observable<QAResponse> {
+    return this.http.post<QAResponse>(`${this.apiUrl}/${paperId}/ask`, {
+      question,
+      topK
+    });
+  }
+
+  deletePaper(paperId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${paperId}`);
   }
 }
